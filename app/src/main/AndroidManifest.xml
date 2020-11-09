@@ -10,7 +10,13 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.WeatherWidget">
+        android:theme="@style/Theme.WeatherWidget"
+        android:usesCleartextTraffic="true">
+
+        <!-- for images behind an unsafe https url -->
+        <meta-data
+            android:name="=ru.faizovr.weatherwidget.network.UnsafeOkHttpGlideModule"
+            android:value="AppGlideModule" />
         <receiver android:name=".WeatherWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

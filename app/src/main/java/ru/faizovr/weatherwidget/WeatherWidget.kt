@@ -5,15 +5,22 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
-import com.bumptech.glide.Glide
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import ru.faizovr.weatherwidget.network.GlideApp
 import ru.faizovr.weatherwidget.network.WeatherResponse
 import ru.faizovr.weatherwidget.network.WeatherServiceBuilder
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
+import kotlin.concurrent.thread
+import kotlin.math.roundToInt
+
 
 /**
  * Implementation of App Widget functionality.
@@ -38,7 +45,12 @@ class WeatherWidget : AppWidgetProvider() {
         val refreshIntent = Intent(context, this::class.java)
         refreshIntent.action = "ru.faizovr.weatherwidget.REFRESH"
         refreshIntent.putExtra("appWidgetId", appWidgetId)
-        val refreshPendingIntent = PendingIntent.getBroadcast(context, 0, refreshIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val refreshPendingIntent = PendingIntent.getBroadcast(
+            context,
+            0,
+            refreshIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
         views.setOnClickPendingIntent(R.id.frame_weather, refreshPendingIntent)
     }
 
@@ -92,9 +104,14 @@ class WeatherWidget : AppWidgetProvider() {
         views: RemoteViews,
         appWidgetId: Int
     ) {
-        val call = WeatherServiceBuilder.buildService().getCurrentWeatherData()//city, API_KEY)
+        val call = WeatherServiceBuilder.buildService().getCurrentWeatherData(
+            city,
+            "ru",
+            "metric",
+            API_KEY
+        )
         call.enqueue(object : Callback<WeatherResponse> {
-//            @SuppressLint("CheckResult")
+            //            @SuppressLint("CheckResult")
             override fun onResponse(
                 call: Call<WeatherResponse>,
                 response: Response<WeatherResponse>
@@ -102,23 +119,34 @@ class WeatherWidget : AppWidgetProvider() {
                 if (response.isSuccessful) {
                     val weatherResponse = response.body()
                     if (weatherResponse != null) {
-                        Log.d(this@WeatherWidget.toString(), "onResponse: ${weatherResponse.main.temp} + ${weatherResponse.weather[0].description}")
+                        Log.d(
+                            this@WeatherWidget.toString(),
+                            "onResponse: ${weatherResponse.main.temp} + ${weatherResponse.weather[0].description}"
+                        )
                         views.setTextViewText(
                             R.id.text_weather_temperature,
-                            weatherResponse.main.temp.toString()
+                            "${weatherResponse.main.temp.roundToInt()} \u2103"
                         )
                         views.setTextViewText(
                             R.id.text_weather_description,
                             weatherResponse.weather[0].description
                         )
-//                        val imageBitmap = Glide
-//                            .with(context)
-//                            .asBitmap()
-//                            .load("$ICON_BASE_URL${weatherResponse.weather[0].icon}.png")
-//                            .submit()
-//                            .get()
-//                        views.setImageViewBitmap(R.id.image_weather, imageBitmap)
-                        views.setTextViewText(R.id.text_city, city) //
+                        var imageBitmap: Bitmap? = null
+                        thread {
+                            imageBitmap = GlideApp
+                                .with(context)
+                                .asBitmap()
+                                .load("$ICON_BASE_URL${weatherResponse.weather[0].icon}.png")
+                                .submit()
+                                .get()
+                            Log.d(TAG, "onResponse: image loaded on background thread :)")
+                            views.setImageViewBitmap(R.id.image_weather, imageBitmap)
+                        }
+                        if (imageBitmap != null) {
+                            views.setImageViewBitmap(R.id.image_weather, imageBitmap)
+                        } else {
+                            Log.d(TAG, "onResponse: image loaded after I try to set it. need to synchronize")
+                        }
                     }
                     setNormalState(views)
                     val appWidgetManager = AppWidgetManager.getInstance(context)
