@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/frame_weather"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_weather">
@@ -12,11 +13,13 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="24dp"
         android:text="@string/city_moscow"
+        tools:visibility="gone"
         android:textAllCaps="true"
         android:textColor="@color/white"
         android:textSize="14sp" />
 
     <LinearLayout
+        tools:visibility="gone"
         android:id="@+id/linear_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -57,7 +60,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:indeterminateTint="#FF0000"
+        android:indeterminateTint="@color/white"
+        tools:visibility="gone"
         android:visibility="gone" />
 
     <TextView
@@ -65,10 +69,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:padding="16dp"
         android:text="@string/message_error"
         android:textColor="@color/white"
         android:textSize="20sp"
         android:textStyle="bold"
+        tools:visibility="visible"
         android:visibility="gone" />
 
 </FrameLayout>

@@ -15,7 +15,6 @@
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="ru.faizovr.weatherwidget.REFRESH"/>
-                <action android:name="ru.faizovr.weatherwidget.STOPREFRESH"/>
             </intent-filter>
 
             <meta-data

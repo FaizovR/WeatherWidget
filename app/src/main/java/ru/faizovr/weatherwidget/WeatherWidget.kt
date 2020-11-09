@@ -1,6 +1,5 @@
 package ru.faizovr.weatherwidget
 
-import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
@@ -31,17 +30,8 @@ class WeatherWidget : AppWidgetProvider() {
         val views: RemoteViews = RemoteViews(context.packageName, R.layout.weather_widget)
         for (appWidgetId in appWidgetIds) {
             setUpdateButton(context, appWidgetId, views)
-            setStopUpdate(context, appWidgetId, views)
         }
         appWidgetManager.updateAppWidget(appWidgetIds, views)
-    }
-
-    private fun setStopUpdate(context: Context, appWidgetId: Int, views: RemoteViews) {
-        val refreshIntent = Intent(context, this::class.java)
-        refreshIntent.action = "ru.faizovr.weatherwidget.STOPREFRESH"
-        refreshIntent.putExtra("appWidgetId", appWidgetId)
-        val refreshPendingIntent = PendingIntent.getBroadcast(context, 0, refreshIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-        views.setOnClickPendingIntent(R.id.pb_weather_loading, refreshPendingIntent)
     }
 
     private fun setUpdateButton(context: Context, appWidgetId: Int, views: RemoteViews) {
@@ -80,21 +70,6 @@ class WeatherWidget : AppWidgetProvider() {
             if (appWidgetId != null) {
                 appWidgetManager.updateAppWidget(appWidgetId, views)
             }
-        }
-        if (intent?.action == "ru.faizovr.weatherwidget.STOPREFRESH") {
-
-            val views: RemoteViews = RemoteViews(context?.packageName, R.layout.weather_widget)
-            setNormalState(views)
-            val appWidgetManager = AppWidgetManager.getInstance(context?.applicationContext)
-            // get appWidgetId
-            val appWidgetId = intent.extras?.getInt("appWidgetId")
-            // load data again
-            if (appWidgetId != null) {
-                appWidgetManager.updateAppWidget(appWidgetId, views)
-            }
-        }
-        if (intent?.action == "ru.faizovr.weatherwidget.REMOTEUPDATE") {
-
         }
     }
 
@@ -207,6 +182,5 @@ class WeatherWidget : AppWidgetProvider() {
         private const val  TAG = "WeatherWidget"
         private const val API_KEY = "eea8689af3e42649b7c92028787960b3"
         private const val ICON_BASE_URL = "http://openweathermap.org/img/w/"
-        //        private const val BASE_URL = "api.openweathermap.org/"
     }
 }
