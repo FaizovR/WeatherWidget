@@ -12,7 +12,7 @@ import javax.net.ssl.X509TrustManager
 
 object WeatherServiceBuilder {
 
-    private const val BASE_URL = "api.openweathermap.org/"
+    private const val BASE_URL = "https://api.openweathermap.org/"
 
     private val interceptor: HttpLoggingInterceptor = HttpLoggingInterceptor().apply {
         this.level = HttpLoggingInterceptor.Level.BODY

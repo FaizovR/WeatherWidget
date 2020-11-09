@@ -1,5 +1,6 @@
 package ru.faizovr.weatherwidget
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
@@ -70,6 +71,11 @@ class WeatherWidget : AppWidgetProvider() {
             val appWidgetManager = AppWidgetManager.getInstance(context?.applicationContext)
             // get appWidgetId
             val appWidgetId = intent.extras?.getInt("appWidgetId")
+            if (context != null && appWidgetId != null) {
+                Log.d(TAG, "loadData: ")
+                loadWeatherForecast("Moscow", context, views, appWidgetId)
+                Log.d(TAG, "onReceive: ")
+            }
             // load data again
             if (appWidgetId != null) {
                 appWidgetManager.updateAppWidget(appWidgetId, views)
@@ -87,6 +93,9 @@ class WeatherWidget : AppWidgetProvider() {
                 appWidgetManager.updateAppWidget(appWidgetId, views)
             }
         }
+        if (intent?.action == "ru.faizovr.weatherwidget.REMOTEUPDATE") {
+
+        }
     }
 
     private fun updateAppWidget(
@@ -97,7 +106,7 @@ class WeatherWidget : AppWidgetProvider() {
         // Construct the RemoteViews object
         val views: RemoteViews = RemoteViews(context.packageName, R.layout.weather_widget)
 
-        loadWeatherForecast("Moscow", context, views)
+//        loadWeatherForecast("Moscow", context, views)
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }
@@ -105,11 +114,12 @@ class WeatherWidget : AppWidgetProvider() {
     private fun loadWeatherForecast(
         city: String,
         context: Context,
-        views: RemoteViews
+        views: RemoteViews,
+        appWidgetId: Int
     ) {
-        val call = WeatherServiceBuilder.buildService().getCurrentWeatherData(city, API_KEY)
+        val call = WeatherServiceBuilder.buildService().getCurrentWeatherData()//city, API_KEY)
         call.enqueue(object : Callback<WeatherResponse> {
-            @SuppressLint("CheckResult")
+//            @SuppressLint("CheckResult")
             override fun onResponse(
                 call: Call<WeatherResponse>,
                 response: Response<WeatherResponse>
@@ -135,6 +145,9 @@ class WeatherWidget : AppWidgetProvider() {
 //                        views.setImageViewBitmap(R.id.image_weather, imageBitmap)
                         views.setTextViewText(R.id.text_city, city) //
                     }
+                    setNormalState(views)
+                    val appWidgetManager = AppWidgetManager.getInstance(context)
+                    appWidgetManager.updateAppWidget(appWidgetId, views)
                 }
             }
 
