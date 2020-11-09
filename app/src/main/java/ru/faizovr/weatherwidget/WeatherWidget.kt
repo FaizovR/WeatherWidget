@@ -7,9 +7,9 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
+import android.widget.Toast
 import com.bumptech.glide.Glide
 import retrofit2.Call
 import retrofit2.Callback
@@ -29,16 +29,8 @@ class WeatherWidget : AppWidgetProvider() {
     ) {
         // There may be multiple widgets active, so update all of them
         for (appWidgetId in appWidgetIds) {
-
             updateAppWidget(context, appWidgetManager, appWidgetId)
-
-            val refreshIntent = Intent(context, WeatherWidget::class.java)
-            refreshIntent.action = "ru.faizovr.weatherwidget.REFRESH"
-            refreshIntent.putExtra("appWidgetId", appWidgetId)
-            val refreshPendingIntent = PendingIntent.getBroadcast(context, 0, refreshIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-            val views: RemoteViews = RemoteViews(context.packageName, R.layout.weather_widget)
-            views.setOnClickPendingIntent(R.id.text_city, refreshPendingIntent)
-            appWidgetManager.updateAppWidget(appWidgetId, views)
+            Toast.makeText(context, "Widget has been updated! ", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -75,7 +67,19 @@ class WeatherWidget : AppWidgetProvider() {
         appWidgetId: Int
     ) {
         val widgetText = context.getString(R.string.appwidget_text)
-        val views = RemoteViews(context.packageName, R.layout.weather_widget)
+//        val views = RemoteViews(context.packageName, R.layout.weather_widget)
+
+        val refreshIntent = Intent(context, WeatherWidget::class.java)
+        refreshIntent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        refreshIntent.putExtra("appWidgetId", appWidgetId)
+        val refreshPendingIntent = PendingIntent.getBroadcast(
+                context,
+                0,
+                refreshIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT)
+        val views: RemoteViews = RemoteViews(context.packageName, R.layout.weather_widget)
+        views.setOnClickPendingIntent(R.id.text_city, refreshPendingIntent)
+        appWidgetManager.updateAppWidget(appWidgetId, views)
 
         loadWeatherForecast(widgetText, context, views)
         // Instruct the widget manager to update the widget
@@ -113,7 +117,7 @@ class WeatherWidget : AppWidgetProvider() {
 //                            .submit()
 //                            .get()
 //                        views.setImageViewBitmap(R.id.image_weather, imageBitmap)
-                        views.setTextViewText(R.id.tv_city, city) //
+                        views.setTextViewText(R.id.text_city, city) //
                     }
                 }
             }

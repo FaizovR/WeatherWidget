@@ -6,9 +6,10 @@
     android:background="@drawable/bg_weather">
 
     <TextView
-        android:id="@+id/tv_city"
+        android:id="@+id/text_city"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="ololo"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:textAllCaps="true"
