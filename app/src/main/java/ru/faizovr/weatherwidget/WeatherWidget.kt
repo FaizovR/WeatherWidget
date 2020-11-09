@@ -35,9 +35,16 @@ internal fun updateAppWidget(
     appWidgetId: Int
 ) {
     val widgetText = context.getString(R.string.appwidget_text)
+    val imageResWeather = R.color.teal_200
+    val widgetTextTemperature = "8°"
+    val widgetWeatherDescription = "Облачно, без осадков"
     // Construct the RemoteViews object
     val views = RemoteViews(context.packageName, R.layout.weather_widget)
-    views.setTextViewText(R.id.appwidget_text, widgetText)
+    views.setTextViewText(R.id.text, widgetText)
+    views.setImageViewResource(R.id.image_weather, imageResWeather)
+    views.setTextViewText(R.id.text_temperature, widgetTextTemperature)
+    views.setTextViewText(R.id.text_weather_description, widgetWeatherDescription)
+//    views.setImageViewResource(R.id.view_background, R.color.light_blue_200)
 
     // Instruct the widget manager to update the widget
     appWidgetManager.updateAppWidget(appWidgetId, views)
