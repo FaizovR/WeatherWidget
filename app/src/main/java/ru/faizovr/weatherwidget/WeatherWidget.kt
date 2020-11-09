@@ -1,8 +1,11 @@
 package ru.faizovr.weatherwidget
 
+import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
+import android.content.Intent
+import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 
@@ -10,6 +13,7 @@ import android.widget.RemoteViews
  * Implementation of App Widget functionality.
  */
 class WeatherWidget : AppWidgetProvider() {
+
     override fun onUpdate(
         context: Context,
         appWidgetManager: AppWidgetManager,
@@ -17,7 +21,16 @@ class WeatherWidget : AppWidgetProvider() {
     ) {
         // There may be multiple widgets active, so update all of them
         for (appWidgetId in appWidgetIds) {
+
             updateAppWidget(context, appWidgetManager, appWidgetId)
+
+            val refreshIntent = Intent(context, WeatherWidget::class.java)
+            refreshIntent.action = "ru.faizovr.weatherwidget.REFRESH"
+            refreshIntent.putExtra("appWidgetId", appWidgetId)
+            val refreshPendingIntent = PendingIntent.getBroadcast(context, 0, refreshIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+            val views: RemoteViews = RemoteViews(context.packageName, R.layout.weather_widget)
+            views.setOnClickPendingIntent(R.id.text_city, refreshPendingIntent)
+            appWidgetManager.updateAppWidget(appWidgetId, views)
         }
     }
 
@@ -27,6 +40,25 @@ class WeatherWidget : AppWidgetProvider() {
 
     override fun onDisabled(context: Context) {
         // Enter relevant functionality for when the last widget is disabled
+    }
+
+    override fun onReceive(context: Context?, intent: Intent?) {
+        super.onReceive(context, intent)
+        if (intent?.action == "ru.faizovr.weatherwidget.REFRESH") {
+//            updateWeather
+
+            Log.d("TAG", "onReceive: ")
+            val views: RemoteViews = RemoteViews(context?.packageName, R.layout.weather_widget)
+            setLoadingState(views)
+
+            val appWidgetManager = AppWidgetManager.getInstance(context?.applicationContext)
+            // get appWidgetId
+            val appWidgetId = intent.extras?.getInt("appWidgetId")
+            // load data again
+            if (appWidgetId != null) {
+                appWidgetManager.updateAppWidget(appWidgetId, views)
+            }
+        }
     }
 
     private fun updateAppWidget(
