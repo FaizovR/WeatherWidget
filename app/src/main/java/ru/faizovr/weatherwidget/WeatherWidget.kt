@@ -3,6 +3,7 @@ package ru.faizovr.weatherwidget
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
+import android.view.View
 import android.widget.RemoteViews
 
 /**
@@ -27,25 +28,60 @@ class WeatherWidget : AppWidgetProvider() {
     override fun onDisabled(context: Context) {
         // Enter relevant functionality for when the last widget is disabled
     }
-}
 
-internal fun updateAppWidget(
-    context: Context,
-    appWidgetManager: AppWidgetManager,
-    appWidgetId: Int
-) {
-    val widgetText = context.getString(R.string.appwidget_text)
-    val imageResWeather = R.color.teal_200
-    val widgetTextTemperature = "8°"
-    val widgetWeatherDescription = "Облачно, без осадков"
-    // Construct the RemoteViews object
-    val views = RemoteViews(context.packageName, R.layout.weather_widget)
-    views.setTextViewText(R.id.text, widgetText)
-    views.setImageViewResource(R.id.image_weather, imageResWeather)
-    views.setTextViewText(R.id.text_temperature, widgetTextTemperature)
-    views.setTextViewText(R.id.text_weather_description, widgetWeatherDescription)
-//    views.setImageViewResource(R.id.view_background, R.color.light_blue_200)
+    private fun updateAppWidget(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int
+    ) {
+        // Construct the RemoteViews object
+        val views: RemoteViews = RemoteViews(context.packageName, R.layout.weather_widget)
 
-    // Instruct the widget manager to update the widget
-    appWidgetManager.updateAppWidget(appWidgetId, views)
+        // Instruct the widget manager to update the widget
+        appWidgetManager.updateAppWidget(appWidgetId, views)
+    }
+
+    private fun setProgressBarVisible(views: RemoteViews) {
+        views.setViewVisibility(R.id.pb_weather_loading, View.VISIBLE)
+    }
+
+    private fun setProgressBarGone(views: RemoteViews) {
+        views.setViewVisibility(R.id.pb_weather_loading, View.GONE)
+    }
+
+    private fun setErrorMessageVisible(views: RemoteViews) {
+        views.setViewVisibility(R.id.text_error_message, View.VISIBLE)
+    }
+
+    private fun setErrorMessageGone(views: RemoteViews) {
+        views.setViewVisibility(R.id.text_error_message, View.GONE)
+    }
+
+    private fun setContentVisible(views: RemoteViews) {
+        views.setViewVisibility(R.id.linear_layout, View.VISIBLE)
+        views.setViewVisibility(R.id.text_city, View.VISIBLE)
+    }
+
+    private fun setContentGone(views: RemoteViews) {
+        views.setViewVisibility(R.id.linear_layout, View.GONE)
+        views.setViewVisibility(R.id.text_city, View.GONE)
+    }
+
+    private fun setLoadingState(views: RemoteViews) {
+        setProgressBarVisible(views)
+        setContentGone(views)
+        setErrorMessageGone(views)
+    }
+
+    private fun setNormalState(views: RemoteViews) {
+        setProgressBarGone(views)
+        setContentVisible(views)
+        setErrorMessageGone(views)
+    }
+
+    private fun setErrorState(views: RemoteViews) {
+        setProgressBarGone(views)
+        setContentGone(views)
+        setErrorMessageVisible(views)
+    }
 }
