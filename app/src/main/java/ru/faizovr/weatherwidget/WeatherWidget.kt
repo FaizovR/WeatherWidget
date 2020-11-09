@@ -19,38 +19,60 @@ class WeatherWidget : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
+        Log.d(TAG, "onUpdate: ")
         // There may be multiple widgets active, so update all of them
+        val views: RemoteViews = RemoteViews(context.packageName, R.layout.weather_widget)
         for (appWidgetId in appWidgetIds) {
-
-            updateAppWidget(context, appWidgetManager, appWidgetId)
-
-            val refreshIntent = Intent(context, WeatherWidget::class.java)
-            refreshIntent.action = "ru.faizovr.weatherwidget.REFRESH"
-            refreshIntent.putExtra("appWidgetId", appWidgetId)
-            val refreshPendingIntent = PendingIntent.getBroadcast(context, 0, refreshIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-            val views: RemoteViews = RemoteViews(context.packageName, R.layout.weather_widget)
-            views.setOnClickPendingIntent(R.id.text_city, refreshPendingIntent)
-            appWidgetManager.updateAppWidget(appWidgetId, views)
+            setUpdateButton(context, appWidgetId, views)
+            setStopUpdate(context, appWidgetId, views)
         }
+        appWidgetManager.updateAppWidget(appWidgetIds, views)
+    }
+
+    private fun setStopUpdate(context: Context, appWidgetId: Int, views: RemoteViews) {
+        val refreshIntent = Intent(context, this::class.java)
+        refreshIntent.action = "ru.faizovr.weatherwidget.STOPREFRESH"
+        refreshIntent.putExtra("appWidgetId", appWidgetId)
+        val refreshPendingIntent = PendingIntent.getBroadcast(context, 0, refreshIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+        views.setOnClickPendingIntent(R.id.pb_weather_loading, refreshPendingIntent)
+    }
+
+    private fun setUpdateButton(context: Context, appWidgetId: Int, views: RemoteViews) {
+        val refreshIntent = Intent(context, this::class.java)
+        refreshIntent.action = "ru.faizovr.weatherwidget.REFRESH"
+        refreshIntent.putExtra("appWidgetId", appWidgetId)
+        val refreshPendingIntent = PendingIntent.getBroadcast(context, 0, refreshIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+        views.setOnClickPendingIntent(R.id.frame_weather, refreshPendingIntent)
     }
 
     override fun onEnabled(context: Context) {
+        Log.d(TAG, "onEnabled: ")
         // Enter relevant functionality for when the first widget is created
     }
-
+    
     override fun onDisabled(context: Context) {
+        Log.d(TAG, "onDisabled: ")
         // Enter relevant functionality for when the last widget is disabled
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
         super.onReceive(context, intent)
+        Log.d(TAG, "onReceive: ${intent.toString()}")
         if (intent?.action == "ru.faizovr.weatherwidget.REFRESH") {
-//            updateWeather
-
-            Log.d("TAG", "onReceive: ")
             val views: RemoteViews = RemoteViews(context?.packageName, R.layout.weather_widget)
             setLoadingState(views)
+            val appWidgetManager = AppWidgetManager.getInstance(context?.applicationContext)
+            // get appWidgetId
+            val appWidgetId = intent.extras?.getInt("appWidgetId")
+            // load data again
+            if (appWidgetId != null) {
+                appWidgetManager.updateAppWidget(appWidgetId, views)
+            }
+        }
+        if (intent?.action == "ru.faizovr.weatherwidget.STOPREFRESH") {
 
+            val views: RemoteViews = RemoteViews(context?.packageName, R.layout.weather_widget)
+            setNormalState(views)
             val appWidgetManager = AppWidgetManager.getInstance(context?.applicationContext)
             // get appWidgetId
             val appWidgetId = intent.extras?.getInt("appWidgetId")
@@ -115,5 +137,9 @@ class WeatherWidget : AppWidgetProvider() {
         setProgressBarGone(views)
         setContentGone(views)
         setErrorMessageVisible(views)
+    }
+
+    companion object {
+        private const val  TAG = "WeatherWidget"
     }
 }

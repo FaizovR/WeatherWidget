@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">WeatherWidget</string>
-    <string name="appwidget_text">Moscow</string>
-    <string name="add_widget">Add widget</string>
+    <string name="city_moscow">Москва</string>
+    <string name="message_cloudy">Облачно, без осадков</string>
+    <string name="message_error">Не удалось получить данные о погоде. Нажмите, чтобы попробовать ещё раз</string>
 </resources>
