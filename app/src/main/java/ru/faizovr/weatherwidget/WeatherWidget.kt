@@ -5,20 +5,16 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.AppWidgetTarget
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import ru.faizovr.weatherwidget.network.GlideApp
 import ru.faizovr.weatherwidget.network.WeatherResponse
 import ru.faizovr.weatherwidget.network.WeatherServiceBuilder
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.InputStream
-import kotlin.concurrent.thread
 import kotlin.math.roundToInt
 
 
@@ -119,22 +115,9 @@ class WeatherWidget : AppWidgetProvider() {
                             R.id.text_weather_description,
                             weatherResponse.weather[0].description.capitalize()
                         )
-                        var imageBitmap: Bitmap? = null
-                        thread {
-                            imageBitmap = GlideApp
-                                .with(context)
-                                .asBitmap()
-                                .load("$ICON_BASE_URL${weatherResponse.weather[0].icon}.png")
-                                .submit()
-                                .get()
-                            Log.d(TAG, "onResponse: image loaded on background thread :)")
-                            views.setImageViewBitmap(R.id.image_weather, imageBitmap)
-                        }
-                        if (imageBitmap != null) {
-                            views.setImageViewBitmap(R.id.image_weather, imageBitmap)
-                        } else {
-                            Log.d(TAG, "onResponse: image loaded after I try to set it. need to synchronize")
-                        }
+                        val awt: AppWidgetTarget = object : AppWidgetTarget(context.applicationContext, R.id.image_weather, views, appWidgetId) {}
+                        Glide.with(context.applicationContext).asBitmap()
+                                .load("$ICON_BASE_URL${weatherResponse.weather[0].icon}.png").into(awt)
                     }
                     setNormalState(context, appWidgetId, views)
                 } else {
