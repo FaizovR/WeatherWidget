@@ -13,6 +13,7 @@ import com.bumptech.glide.request.target.AppWidgetTarget
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import ru.faizovr.weatherwidget.network.GlideApp
 import ru.faizovr.weatherwidget.network.WeatherResponse
 import ru.faizovr.weatherwidget.network.WeatherServiceBuilder
 import kotlin.math.roundToInt
@@ -63,16 +64,12 @@ class WeatherWidget : AppWidgetProvider() {
         Log.d(TAG, "onReceive: ${intent.toString()} ${intent?.extras?.keySet()?.map {it.toString()}}")
         if (intent?.action == "ru.faizovr.weatherwidget.REFRESH") {
             val views: RemoteViews = RemoteViews(context?.packageName, R.layout.weather_widget)
-            val appWidgetManager = AppWidgetManager.getInstance(context?.applicationContext)
             val appWidgetId = intent.extras?.getInt("appWidgetId")
             if (context != null && appWidgetId != null) {
                 setLoadingState(context, appWidgetId, views)
             }
             if (context != null && appWidgetId != null) {
                 loadWeatherForecast("Moscow", context, views, appWidgetId)
-            }
-            if (appWidgetId != null) {
-                appWidgetManager.updateAppWidget(appWidgetId, views)
             }
         }
         if (intent?.action == "android.appwidget.action.APPWIDGET_UPDATE") {
@@ -122,7 +119,7 @@ class WeatherWidget : AppWidgetProvider() {
                             weatherResponse.weather[0].description.capitalize()
                         )
                         val awt: AppWidgetTarget = object : AppWidgetTarget(context.applicationContext, R.id.image_weather, views, appWidgetId) {}
-                        Glide.with(context.applicationContext).asBitmap()
+                        GlideApp.with(context.applicationContext).asBitmap()
                                 .load("$ICON_BASE_URL${weatherResponse.weather[0].icon}.png").into(awt)
                     }
                     setNormalState(context, appWidgetId, views)
@@ -169,6 +166,8 @@ class WeatherWidget : AppWidgetProvider() {
         setProgressBarVisible(views)
         setContentGone(views)
         setErrorMessageGone(views)
+        val appWidgetManager = AppWidgetManager.getInstance(context)
+        appWidgetManager.updateAppWidget(appWidgetId, views)
     }
 
     private fun setNormalState(context: Context, appWidgetId: Int, views: RemoteViews) {
