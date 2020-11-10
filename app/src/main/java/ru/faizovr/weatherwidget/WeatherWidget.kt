@@ -8,7 +8,6 @@ import android.content.Intent
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
-import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.AppWidgetTarget
 import retrofit2.Call
 import retrofit2.Callback
@@ -17,13 +16,15 @@ import ru.faizovr.weatherwidget.network.GlideApp
 import ru.faizovr.weatherwidget.network.WeatherResponse
 import ru.faizovr.weatherwidget.network.WeatherServiceBuilder
 import ru.faizovr.weatherwidget.presentation.WeatherWidgetContract
+import ru.faizovr.weatherwidget.presentation.presenter.WeatherWidgetPresenter
 import kotlin.math.roundToInt
-
 
 /**
  * Implementation of App Widget functionality.
  */
-class WeatherWidget : AppWidgetProvider(), WeatherWidgetContract {
+class WeatherWidget : AppWidgetProvider(), WeatherWidgetContract.ViewInterface {
+
+    private var weatherWidgetPresenter: WeatherWidgetContract.WeatherWidgetPresenterInterface? = null
 
     override fun onUpdate(
         context: Context,
@@ -31,11 +32,11 @@ class WeatherWidget : AppWidgetProvider(), WeatherWidgetContract {
         appWidgetIds: IntArray
     ) {
         Log.d(TAG, "onUpdate: ")
-        // There may be multiple widgets active, so update all of them
         val views: RemoteViews = RemoteViews(context.packageName, R.layout.weather_widget)
-        for (appWidgetId in appWidgetIds) {
-            loadWeatherForecast("Moscow", context, views, appWidgetId)
-        }
+
+        weatherWidgetPresenter?.onUpdate(context, appWidgetManager, appWidgetIds)
+
+        // There may be multiple widgets active, so update all of them
     }
 
     private fun setUpdateButton(context: Context, appWidgetId: Int, views: RemoteViews) {
@@ -52,10 +53,11 @@ class WeatherWidget : AppWidgetProvider(), WeatherWidgetContract {
     }
 
     override fun onEnabled(context: Context) {
-        Log.d(TAG, "onEnabled: ")
+        weatherWidgetPresenter = WeatherWidgetPresenter(viewInterface = this)
     }
 
     override fun onDisabled(context: Context) {
+        weatherWidgetPresenter = null
         Log.d(TAG, "onDisabled: ")
         // Enter relevant functionality for when the last widget is disabled
     }
@@ -163,7 +165,7 @@ class WeatherWidget : AppWidgetProvider(), WeatherWidgetContract {
         views.setViewVisibility(R.id.text_city, View.GONE)
     }
 
-    private fun setLoadingState(context: Context, appWidgetId: Int, views: RemoteViews) {
+    override fun setLoadingState(context: Context, appWidgetId: Int, views: RemoteViews) {
         setProgressBarVisible(views)
         setContentGone(views)
         setErrorMessageGone(views)
@@ -171,7 +173,7 @@ class WeatherWidget : AppWidgetProvider(), WeatherWidgetContract {
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }
 
-    private fun setNormalState(context: Context, appWidgetId: Int, views: RemoteViews) {
+    override fun setNormalState(context: Context, appWidgetId: Int, views: RemoteViews) {
         setProgressBarGone(views)
         setContentVisible(views)
         setErrorMessageGone(views)
@@ -179,7 +181,7 @@ class WeatherWidget : AppWidgetProvider(), WeatherWidgetContract {
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }
 
-    private fun setErrorState(context: Context, appWidgetId: Int, views: RemoteViews) {
+    override fun setErrorState(context: Context, appWidgetId: Int, views: RemoteViews) {
         setProgressBarGone(views)
         setContentGone(views)
         setErrorMessageVisible(views)
