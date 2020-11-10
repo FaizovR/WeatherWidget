@@ -16,13 +16,14 @@ import retrofit2.Response
 import ru.faizovr.weatherwidget.network.GlideApp
 import ru.faizovr.weatherwidget.network.WeatherResponse
 import ru.faizovr.weatherwidget.network.WeatherServiceBuilder
+import ru.faizovr.weatherwidget.presentation.WeatherWidgetContract
 import kotlin.math.roundToInt
 
 
 /**
  * Implementation of App Widget functionality.
  */
-class WeatherWidget : AppWidgetProvider() {
+class WeatherWidget : AppWidgetProvider(), WeatherWidgetContract {
 
     override fun onUpdate(
         context: Context,
