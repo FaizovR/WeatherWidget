@@ -14,7 +14,7 @@
         android:usesCleartextTraffic="true">
 
         <meta-data
-            android:name="=ru.faizovr.weatherwidget.network.UnsafeOkHttpGlideModule"
+            android:name="=ru.faizovr.weatherwidget.data.network.UnsafeOkHttpGlideModule"
             android:value="AppGlideModule" />
 
         <receiver android:name=".WeatherWidget">

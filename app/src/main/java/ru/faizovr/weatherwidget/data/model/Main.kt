@@ -1,9 +1,9 @@
-package ru.faizovr.weatherwidget.network
+package ru.faizovr.weatherwidget.data.model
 
 
 import com.google.gson.annotations.SerializedName
 
-data class Main(
+class Main(
     @SerializedName("feels_like")
     val feelsLike: Double,
     val humidity: Int,

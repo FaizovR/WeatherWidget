@@ -1,7 +1,7 @@
-package ru.faizovr.weatherwidget.network
+package ru.faizovr.weatherwidget.data.model
 
 
-data class Weather(
+class Weather(
     val description: String,
     val icon: String,
     val id: Int,

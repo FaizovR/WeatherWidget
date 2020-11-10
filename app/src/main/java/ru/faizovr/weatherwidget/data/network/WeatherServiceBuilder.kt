@@ -1,14 +1,9 @@
-package ru.faizovr.weatherwidget.network
+package ru.faizovr.weatherwidget.data.network
 
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.security.cert.CertificateException
-import javax.net.ssl.HostnameVerifier
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
 
 object WeatherServiceBuilder {
 
@@ -30,4 +25,5 @@ object WeatherServiceBuilder {
 
     fun buildService(): WeatherService =
         retrofit.create(WeatherService::class.java)
+
 }
