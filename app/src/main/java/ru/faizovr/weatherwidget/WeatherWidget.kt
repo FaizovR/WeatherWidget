@@ -32,10 +32,8 @@ class WeatherWidget : AppWidgetProvider() {
         // There may be multiple widgets active, so update all of them
         val views: RemoteViews = RemoteViews(context.packageName, R.layout.weather_widget)
         for (appWidgetId in appWidgetIds) {
-            setUpdateButton(context, appWidgetId, views)
             loadWeatherForecast("Moscow", context, views, appWidgetId)
         }
-        appWidgetManager.updateAppWidget(appWidgetIds, views)
     }
 
     private fun setUpdateButton(context: Context, appWidgetId: Int, views: RemoteViews) {
@@ -62,9 +60,8 @@ class WeatherWidget : AppWidgetProvider() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
         super.onReceive(context, intent)
-        Log.d(TAG, "onReceive: ${intent.toString()}")
-        if (intent?.action == "ru.faizovr.weatherwidget.REFRESH" ||
-                intent?.action == "android.appwidget.action.APPWIDGET_UPDATE") {
+        Log.d(TAG, "onReceive: ${intent.toString()} ${intent?.extras?.keySet()?.map {it.toString()}}")
+        if (intent?.action == "ru.faizovr.weatherwidget.REFRESH") {
             val views: RemoteViews = RemoteViews(context?.packageName, R.layout.weather_widget)
             val appWidgetManager = AppWidgetManager.getInstance(context?.applicationContext)
             val appWidgetId = intent.extras?.getInt("appWidgetId")
@@ -72,12 +69,21 @@ class WeatherWidget : AppWidgetProvider() {
                 setLoadingState(context, appWidgetId, views)
             }
             if (context != null && appWidgetId != null) {
-                Log.d(TAG, "loadData: ")
                 loadWeatherForecast("Moscow", context, views, appWidgetId)
-                Log.d(TAG, "onReceive: ")
             }
             if (appWidgetId != null) {
                 appWidgetManager.updateAppWidget(appWidgetId, views)
+            }
+        }
+        if (intent?.action == "android.appwidget.action.APPWIDGET_UPDATE") {
+            val views: RemoteViews = RemoteViews(context?.packageName, R.layout.weather_widget)
+            val appWidgetManager = AppWidgetManager.getInstance(context?.applicationContext)
+            val appWidgetIds = intent.extras?.getIntArray("appWidgetIds")
+            if (context != null && appWidgetIds != null) {
+                for (appWidgetId in appWidgetIds) {
+                    setUpdateButton(context, appWidgetId, views)
+                    appWidgetManager.updateAppWidget(appWidgetIds, views)
+                }
             }
         }
     }
