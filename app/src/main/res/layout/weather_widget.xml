@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/frame_weather"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
+    android:id="@+id/frame_weather"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_weather">
 
@@ -13,14 +13,13 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="24dp"
         android:text="@string/city_moscow"
-        tools:visibility="gone"
         android:textAllCaps="true"
         android:textColor="@color/white"
-        android:textSize="14sp" />
+        android:textSize="16sp" />
 
     <LinearLayout
-        tools:visibility="gone"
         android:id="@+id/linear_layout"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="48dp">
@@ -29,7 +28,7 @@
             android:id="@+id/image_weather"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_marginStart="24dp"
+            android:layout_marginStart="12dp"
             android:src="@drawable/icon_weather_cloudy" />
 
         <TextView
@@ -37,8 +36,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:layout_marginStart="16dp"
-            android:text="8°"
+            android:layout_marginStart="10dp"
+            android:text="22°"
             android:textColor="@color/white"
             android:textSize="26sp"
             android:textStyle="bold" />
@@ -48,7 +47,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="6dp"
+            android:singleLine="true"
             android:text="@string/message_cloudy"
             android:textColor="@color/white"
             android:textSize="20sp"
@@ -61,20 +61,19 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:indeterminateTint="@color/white"
-        tools:visibility="gone"
         android:visibility="gone" />
 
     <TextView
         android:id="@+id/text_error_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textAlignment="center"
         android:layout_gravity="center"
-        android:padding="16dp"
+        android:padding="0dp"
         android:text="@string/message_error"
         android:textColor="@color/white"
         android:textSize="20sp"
         android:textStyle="bold"
-        tools:visibility="visible"
         android:visibility="gone" />
 
 </FrameLayout>

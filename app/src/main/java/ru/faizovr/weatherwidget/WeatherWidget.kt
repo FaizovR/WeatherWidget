@@ -37,6 +37,7 @@ class WeatherWidget : AppWidgetProvider() {
         val views: RemoteViews = RemoteViews(context.packageName, R.layout.weather_widget)
         for (appWidgetId in appWidgetIds) {
             setUpdateButton(context, appWidgetId, views)
+            loadWeatherForecast("Moscow", context, views, appWidgetId)
         }
         appWidgetManager.updateAppWidget(appWidgetIds, views)
     }
@@ -56,7 +57,6 @@ class WeatherWidget : AppWidgetProvider() {
 
     override fun onEnabled(context: Context) {
         Log.d(TAG, "onEnabled: ")
-        // Enter relevant functionality for when the first widget is created
     }
 
     override fun onDisabled(context: Context) {
@@ -67,35 +67,23 @@ class WeatherWidget : AppWidgetProvider() {
     override fun onReceive(context: Context?, intent: Intent?) {
         super.onReceive(context, intent)
         Log.d(TAG, "onReceive: ${intent.toString()}")
-        if (intent?.action == "ru.faizovr.weatherwidget.REFRESH") {
+        if (intent?.action == "ru.faizovr.weatherwidget.REFRESH" ||
+                intent?.action == "android.appwidget.action.APPWIDGET_UPDATE") {
             val views: RemoteViews = RemoteViews(context?.packageName, R.layout.weather_widget)
-            setLoadingState(views)
             val appWidgetManager = AppWidgetManager.getInstance(context?.applicationContext)
-            // get appWidgetId
             val appWidgetId = intent.extras?.getInt("appWidgetId")
+            if (context != null && appWidgetId != null) {
+                setLoadingState(context, appWidgetId, views)
+            }
             if (context != null && appWidgetId != null) {
                 Log.d(TAG, "loadData: ")
                 loadWeatherForecast("Moscow", context, views, appWidgetId)
                 Log.d(TAG, "onReceive: ")
             }
-            // load data again
             if (appWidgetId != null) {
                 appWidgetManager.updateAppWidget(appWidgetId, views)
             }
         }
-    }
-
-    private fun updateAppWidget(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetId: Int
-    ) {
-        // Construct the RemoteViews object
-        val views: RemoteViews = RemoteViews(context.packageName, R.layout.weather_widget)
-
-//        loadWeatherForecast("Moscow", context, views)
-        // Instruct the widget manager to update the widget
-        appWidgetManager.updateAppWidget(appWidgetId, views)
     }
 
     private fun loadWeatherForecast(
@@ -120,16 +108,16 @@ class WeatherWidget : AppWidgetProvider() {
                     val weatherResponse = response.body()
                     if (weatherResponse != null) {
                         Log.d(
-                            this@WeatherWidget.toString(),
+                            TAG,
                             "onResponse: ${weatherResponse.main.temp} + ${weatherResponse.weather[0].description}"
                         )
                         views.setTextViewText(
                             R.id.text_weather_temperature,
-                            "${weatherResponse.main.temp.roundToInt()} \u2103"
+                            "${weatherResponse.main.temp.roundToInt()}° "
                         )
                         views.setTextViewText(
                             R.id.text_weather_description,
-                            weatherResponse.weather[0].description
+                            weatherResponse.weather[0].description.capitalize()
                         )
                         var imageBitmap: Bitmap? = null
                         thread {
@@ -148,17 +136,17 @@ class WeatherWidget : AppWidgetProvider() {
                             Log.d(TAG, "onResponse: image loaded after I try to set it. need to synchronize")
                         }
                     }
-                    setNormalState(views)
-                    val appWidgetManager = AppWidgetManager.getInstance(context)
-                    appWidgetManager.updateAppWidget(appWidgetId, views)
+                    setNormalState(context, appWidgetId, views)
+                } else {
+                    setErrorState(context, appWidgetId, views)
+
                 }
             }
 
             override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
-                Log.e(this@WeatherWidget.toString(), "onFailure: api call failed")
-                setErrorState(views)
+                Log.e(TAG, "onFailure: api call failed")
+                setErrorState(context, appWidgetId, views)
             }
-
         })
     }
 
@@ -188,22 +176,26 @@ class WeatherWidget : AppWidgetProvider() {
         views.setViewVisibility(R.id.text_city, View.GONE)
     }
 
-    private fun setLoadingState(views: RemoteViews) {
+    private fun setLoadingState(context: Context, appWidgetId: Int, views: RemoteViews) {
         setProgressBarVisible(views)
         setContentGone(views)
         setErrorMessageGone(views)
     }
 
-    private fun setNormalState(views: RemoteViews) {
+    private fun setNormalState(context: Context, appWidgetId: Int, views: RemoteViews) {
         setProgressBarGone(views)
         setContentVisible(views)
         setErrorMessageGone(views)
+        val appWidgetManager = AppWidgetManager.getInstance(context)
+        appWidgetManager.updateAppWidget(appWidgetId, views)
     }
 
-    private fun setErrorState(views: RemoteViews) {
+    private fun setErrorState(context: Context, appWidgetId: Int, views: RemoteViews) {
         setProgressBarGone(views)
         setContentGone(views)
         setErrorMessageVisible(views)
+        val appWidgetManager = AppWidgetManager.getInstance(context)
+        appWidgetManager.updateAppWidget(appWidgetId, views)
     }
 
     companion object {
