@@ -19,8 +19,8 @@
 
         <receiver android:name=".WeatherWidget">
             <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="ru.faizovr.weatherwidget.REFRESH"/>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
 
             <meta-data

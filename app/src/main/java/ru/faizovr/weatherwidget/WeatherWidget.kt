@@ -3,10 +3,10 @@ package ru.faizovr.weatherwidget
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 import com.bumptech.glide.request.target.AppWidgetTarget
@@ -14,7 +14,6 @@ import ru.faizovr.weatherwidget.data.model.WeatherModel
 import ru.faizovr.weatherwidget.data.network.GlideApp
 import ru.faizovr.weatherwidget.data.network.WeatherResponseCallback
 import ru.faizovr.weatherwidget.data.repository.Repository
-import java.util.ArrayList
 
 class WeatherWidget : AppWidgetProvider() {
 
@@ -23,65 +22,51 @@ class WeatherWidget : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
-        Log.d(TAG, "onUpdate: update")
+        val thisWidget = ComponentName(context, this.javaClass)
+        val allWidgetIds = appWidgetManager.getAppWidgetIds(thisWidget)
         val views = RemoteViews(context.packageName, R.layout.weather_widget)
-        appWidgetIds.forEach { Log.d(TAG, "onUpdate: $it") }
-        setLoadingState(context, appWidgetIds, views)
-        updateWidgetViews(context, views, appWidgetIds)
-        setUpdateButton(context, appWidgetIds)
-        Log.d(TAG, "onUpdate: update end")
-    }
-
-    override fun onEnabled(context: Context) {
-        Log.d(TAG, "onEnabled: ")
-    }
-
-    override fun onDisabled(context: Context) {
-        Log.d(TAG, "onDisabled: ")
+        setLoadingState(context, allWidgetIds, views)
+        updateWidgetViews(context, views, allWidgetIds)
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
         super.onReceive(context, intent)
-        Log.d(TAG, "onReceive: ${intent.toString()} ${intent?.extras?.keySet()?.map { it.toString() }}")
-
-        if (intent?.action == ACTION_REFRESH) {
+        if (intent?.action == "android.appwidget.action.APPWIDGET_UPDATE") {
             val extras: Bundle? = intent.extras
             if (extras != null && context != null) {
-                val appWidgetIds: IntArray? = extras.getIntArray(AppWidgetManager.EXTRA_APPWIDGET_IDS)
-                val views = RemoteViews(context.packageName, R.layout.weather_widget)
+                val appWidgetIds: IntArray? =
+                    extras.getIntArray(AppWidgetManager.EXTRA_APPWIDGET_IDS)
                 if (appWidgetIds != null && appWidgetIds.isNotEmpty()) {
-                    setLoadingState(context, appWidgetIds,views)
-                    updateWidgetViews(context, views, appWidgetIds)
+                    setUpdateButton(context, appWidgetIds)
+                    onUpdate(context, AppWidgetManager.getInstance(context), appWidgetIds)
                 }
             }
         }
     }
 
     private fun updateWidgetViews(context: Context, views: RemoteViews, appWidgetIds: IntArray) {
-        Log.d(TAG, "updateWidgetTextViews: update view. IMPORTANT")
         Repository().loadCurrentWeather(object : WeatherResponseCallback {
             override fun onSuccess(weatherModel: WeatherModel) {
                 setDataToWidgetViews(context, views, appWidgetIds, weatherModel)
                 setNormalState(context, appWidgetIds, views)
-                Log.d(TAG, "onSuccess: setDataToView")
             }
 
             override fun onLoading(isLoading: Boolean) {
-                // show loading, retry call (how to retry call within the call ?)
-                Log.d(TAG, "onLoading: setDataToView")
                 setLoadingState(context, appWidgetIds, views)
             }
 
             override fun onError(t: Throwable) {
-                // show error, may be throw t
-                Log.d(TAG, "onError: setDataToView")
                 setErrorState(context, appWidgetIds, views)
             }
         })
     }
 
-    private fun setDataToWidgetViews(context: Context, views: RemoteViews, appWidgetIds: IntArray, weatherModel: WeatherModel) {
-        Log.d(TAG, "setTextDataToWidgetViews: set texts")
+    private fun setDataToWidgetViews(
+        context: Context,
+        views: RemoteViews,
+        appWidgetIds: IntArray,
+        weatherModel: WeatherModel
+    ) {
         views.setTextViewText(
             R.id.text_weather_temperature,
             "${weatherModel.temp}° "
@@ -124,7 +109,6 @@ class WeatherWidget : AppWidgetProvider() {
         setContentVisibility(views, View.GONE)
         setErrorMessageVisibility(views, View.GONE)
         updateAppWidget(context, appWidgetIds, views)
-        Log.d(TAG, "setLoadingState: loading")
     }
 
     private fun setNormalState(context: Context, appWidgetIds: IntArray, views: RemoteViews) {
@@ -132,7 +116,6 @@ class WeatherWidget : AppWidgetProvider() {
         setContentVisibility(views, View.VISIBLE)
         setErrorMessageVisibility(views, View.GONE)
         updateAppWidget(context, appWidgetIds, views)
-        Log.d(TAG, "setNormalState: normal")
     }
 
     private fun setErrorState(context: Context, appWidgetIds: IntArray, views: RemoteViews) {
@@ -140,33 +123,26 @@ class WeatherWidget : AppWidgetProvider() {
         setContentVisibility(views, View.GONE)
         setErrorMessageVisibility(views, View.VISIBLE)
         updateAppWidget(context, appWidgetIds, views)
-        Log.d(TAG, "setErrorState: error")
     }
 
     private fun updateAppWidget(context: Context, appWidgetIds: IntArray, views: RemoteViews) {
         val appWidgetManager = AppWidgetManager.getInstance(context)
         appWidgetManager.updateAppWidget(appWidgetIds, views)
-        Log.d(TAG, "updateAppWidget: update app widget")
     }
 
     private fun setUpdateButton(context: Context, appWidgetIds: IntArray) {
         val refreshIntent = Intent(context, this::class.java)
         val views = RemoteViews(context.packageName, R.layout.weather_widget)
-        refreshIntent.action = ACTION_REFRESH
-        refreshIntent.putIntegerArrayListExtra(APP_WIDGET_IDS, appWidgetIds.toCollection(ArrayList()))
+        refreshIntent.action = "android.appwidget.action.APPWIDGET_UPDATE"
+        refreshIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds)
         val refreshPendingIntent = PendingIntent.getBroadcast(
             context,
             0,
             refreshIntent,
             PendingIntent.FLAG_UPDATE_CURRENT
         )
-        Log.d(TAG, "setUpdateButton: butttoooooooooooooooooon")
         views.setOnClickPendingIntent(R.id.frame_weather, refreshPendingIntent)
-    }
-
-    companion object {
-        private const val TAG = "WeatherWidget"
-        private const val ACTION_REFRESH = "ru.faizovr.weatherwidget.REFRESH"
-        private const val APP_WIDGET_IDS = "appWidgetIds"
+        val appWidgetManager = AppWidgetManager.getInstance(context)
+        appWidgetManager.updateAppWidget(appWidgetIds, views)
     }
 }
