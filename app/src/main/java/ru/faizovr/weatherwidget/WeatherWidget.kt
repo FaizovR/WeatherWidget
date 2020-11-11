@@ -19,9 +19,6 @@ import ru.faizovr.weatherwidget.presentation.WeatherWidgetContract
 import ru.faizovr.weatherwidget.presentation.presenter.WeatherWidgetPresenter
 import kotlin.math.roundToInt
 
-/**
- * Implementation of App Widget functionality.
- */
 class WeatherWidget : AppWidgetProvider(), WeatherWidgetContract.ViewInterface {
 
     private var weatherWidgetPresenter: WeatherWidgetContract.WeatherWidgetPresenterInterface? = null
@@ -33,27 +30,12 @@ class WeatherWidget : AppWidgetProvider(), WeatherWidgetContract.ViewInterface {
     ) {
         Log.d(TAG, "onUpdate: ")
         val views: RemoteViews = RemoteViews(context.packageName, R.layout.weather_widget)
-
         weatherWidgetPresenter?.onUpdate(context, appWidgetManager, appWidgetIds)
-
-        // There may be multiple widgets active, so update all of them
-    }
-
-    private fun setUpdateButton(context: Context, appWidgetId: Int, views: RemoteViews) {
-        val refreshIntent = Intent(context, this::class.java)
-        refreshIntent.action = "ru.faizovr.weatherwidget.REFRESH"
-        refreshIntent.putExtra("appWidgetId", appWidgetId)
-        val refreshPendingIntent = PendingIntent.getBroadcast(
-            context,
-            0,
-            refreshIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        views.setOnClickPendingIntent(R.id.frame_weather, refreshPendingIntent)
     }
 
     override fun onEnabled(context: Context) {
-        weatherWidgetPresenter = WeatherWidgetPresenter(viewInterface = this)
+        val views: RemoteViews = RemoteViews(context?.packageName, R.layout.weather_widget)
+        weatherWidgetPresenter = WeatherWidgetPresenter(this, views)
     }
 
     override fun onDisabled(context: Context) {
@@ -66,24 +48,8 @@ class WeatherWidget : AppWidgetProvider(), WeatherWidgetContract.ViewInterface {
         super.onReceive(context, intent)
         Log.d(TAG, "onReceive: ${intent.toString()} ${intent?.extras?.keySet()?.map {it.toString()}}")
         if (intent?.action == "ru.faizovr.weatherwidget.REFRESH") {
-            val views: RemoteViews = RemoteViews(context?.packageName, R.layout.weather_widget)
-            val appWidgetId = intent.extras?.getInt("appWidgetId")
-            if (context != null && appWidgetId != null) {
-                setLoadingState(context, appWidgetId, views)
-            }
-            if (context != null && appWidgetId != null) {
-                loadWeatherForecast("Moscow", context, views, appWidgetId)
-            }
-        }
-        if (intent?.action == "android.appwidget.action.APPWIDGET_UPDATE") {
-            val views: RemoteViews = RemoteViews(context?.packageName, R.layout.weather_widget)
-            val appWidgetManager = AppWidgetManager.getInstance(context?.applicationContext)
-            val appWidgetIds = intent.extras?.getIntArray("appWidgetIds")
-            if (context != null && appWidgetIds != null) {
-                for (appWidgetId in appWidgetIds) {
-                    setUpdateButton(context, appWidgetId, views)
-                    appWidgetManager.updateAppWidget(appWidgetIds, views)
-                }
+            if (context != null) {
+                weatherWidgetPresenter?.onWidgetClickedForUpdate(context)
             }
         }
     }
@@ -187,6 +153,20 @@ class WeatherWidget : AppWidgetProvider(), WeatherWidgetContract.ViewInterface {
         setErrorMessageVisible(views)
         val appWidgetManager = AppWidgetManager.getInstance(context)
         appWidgetManager.updateAppWidget(appWidgetId, views)
+    }
+
+    override fun setUpdateButton(context: Context, appWidgetId: Int) {
+        val refreshIntent = Intent(context, this::class.java)
+        val views = RemoteViews(context.packageName, R.layout.weather_widget)
+        refreshIntent.action = "ru.faizovr.weatherwidget.REFRESH"
+        refreshIntent.putExtra("appWidgetId", appWidgetId)
+        val refreshPendingIntent = PendingIntent.getBroadcast(
+            context,
+            0,
+            refreshIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        views.setOnClickPendingIntent(R.id.frame_weather, refreshPendingIntent)
     }
 
     companion object {

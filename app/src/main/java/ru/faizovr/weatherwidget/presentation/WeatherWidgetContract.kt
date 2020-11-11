@@ -10,9 +10,11 @@ interface WeatherWidgetContract {
         fun setLoadingState(context: Context, appWidgetId: Int, views: RemoteViews)
         fun setNormalState(context: Context, appWidgetId: Int, views: RemoteViews)
         fun setErrorState(context: Context, appWidgetId: Int, views: RemoteViews)
+        fun setUpdateButton(context: Context, appWidgetId: Int)
     }
 
     interface WeatherWidgetPresenterInterface {
+        fun onWidgetClickedForUpdate(context: Context)
         fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray)
     }
 }
