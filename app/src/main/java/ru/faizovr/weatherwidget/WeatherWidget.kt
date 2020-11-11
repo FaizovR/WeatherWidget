@@ -15,41 +15,59 @@ import retrofit2.Response
 import ru.faizovr.weatherwidget.network.GlideApp
 import ru.faizovr.weatherwidget.network.WeatherResponse
 import ru.faizovr.weatherwidget.network.WeatherServiceBuilder
-import ru.faizovr.weatherwidget.presentation.WeatherWidgetContract
-import ru.faizovr.weatherwidget.presentation.presenter.WeatherWidgetPresenter
 import kotlin.math.roundToInt
 
-class WeatherWidget : AppWidgetProvider(), WeatherWidgetContract.ViewInterface {
-
-    private var weatherWidgetPresenter: WeatherWidgetContract.WeatherWidgetPresenterInterface? = null
+class WeatherWidget : AppWidgetProvider() {
 
     override fun onUpdate(
         context: Context,
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
-        Log.d(TAG, "onUpdate: ")
-        val views: RemoteViews = RemoteViews(context.packageName, R.layout.weather_widget)
-        weatherWidgetPresenter?.onUpdate(context, appWidgetManager, appWidgetIds)
+//        Загрузить данные с апи один раз
+        val views = RemoteViews(context.packageName, R.layout.weather_widget)
+//      Обновление стейта всех виджетов на лоадинг
+        for (appWidgetId in appWidgetIds) {
+            setLoadingState(context, appWidgetId, views)
+        }
+//        Обновить все виджеты
+//        When Api Data is ready, update data in views, and set normal state or Error state
+        for (appWidgetId in appWidgetIds) {
+            setUpdateButton(context, appWidgetId)
+
+//            When Api Data is ready, update data in views, and set normal state or Error state
+        }
     }
 
     override fun onEnabled(context: Context) {
-        val views: RemoteViews = RemoteViews(context?.packageName, R.layout.weather_widget)
-        weatherWidgetPresenter = WeatherWidgetPresenter(this, views)
+        Log.d(TAG, "onEnabled: ")
     }
 
     override fun onDisabled(context: Context) {
-        weatherWidgetPresenter = null
         Log.d(TAG, "onDisabled: ")
-        // Enter relevant functionality for when the last widget is disabled
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
         super.onReceive(context, intent)
-        Log.d(TAG, "onReceive: ${intent.toString()} ${intent?.extras?.keySet()?.map {it.toString()}}")
-        if (intent?.action == "ru.faizovr.weatherwidget.REFRESH") {
-            if (context != null) {
-                weatherWidgetPresenter?.onWidgetClickedForUpdate(context)
+        Log.d(
+            TAG,
+            "onReceive: ${intent.toString()} ${intent?.extras?.keySet()?.map { it.toString() }}"
+        )
+
+        if (intent?.action == ACTION_REFRESH) {
+            // Вынести в отдельный метод
+            val extras = intent.extras
+            if (extras != null && context != null) {
+                val appWidgetIds = extras.getIntArray(AppWidgetManager.EXTRA_APPWIDGET_IDS)
+                val appWidgetManager = AppWidgetManager.getInstance(context)
+                val views = RemoteViews(context?.packageName, R.layout.weather_widget)
+                if (appWidgetIds != null && appWidgetIds.isNotEmpty()) {
+//                  Начать загрузку данных
+                    for (appWidgetId in appWidgetIds) {
+                        setLoadingState(context, appWidgetId,views)
+                    }
+//                  Когда данные вернулить обновить вью через стейт
+                }
             }
         }
     }
@@ -87,9 +105,14 @@ class WeatherWidget : AppWidgetProvider(), WeatherWidgetContract.ViewInterface {
                             R.id.text_weather_description,
                             weatherResponse.weather[0].description.capitalize()
                         )
-                        val awt: AppWidgetTarget = object : AppWidgetTarget(context.applicationContext, R.id.image_weather, views, appWidgetId) {}
+                        val awt: AppWidgetTarget = object : AppWidgetTarget(
+                            context.applicationContext,
+                            R.id.image_weather,
+                            views,
+                            appWidgetId
+                        ) {}
                         GlideApp.with(context.applicationContext).asBitmap()
-                                .load("$ICON_BASE_URL${weatherResponse.weather[0].icon}.png").into(awt)
+                            .load("$ICON_BASE_URL${weatherResponse.weather[0].icon}.png").into(awt)
                     }
                     setNormalState(context, appWidgetId, views)
                 } else {
@@ -131,35 +154,37 @@ class WeatherWidget : AppWidgetProvider(), WeatherWidgetContract.ViewInterface {
         views.setViewVisibility(R.id.text_city, View.GONE)
     }
 
-    override fun setLoadingState(context: Context, appWidgetId: Int, views: RemoteViews) {
+    fun setLoadingState(context: Context, appWidgetId: Int, views: RemoteViews) {
         setProgressBarVisible(views)
         setContentGone(views)
         setErrorMessageGone(views)
-        val appWidgetManager = AppWidgetManager.getInstance(context)
-        appWidgetManager.updateAppWidget(appWidgetId, views)
+        updateAppWidget(context, appWidgetId, views)
     }
 
-    override fun setNormalState(context: Context, appWidgetId: Int, views: RemoteViews) {
+    fun setNormalState(context: Context, appWidgetId: Int, views: RemoteViews) {
         setProgressBarGone(views)
         setContentVisible(views)
         setErrorMessageGone(views)
-        val appWidgetManager = AppWidgetManager.getInstance(context)
-        appWidgetManager.updateAppWidget(appWidgetId, views)
+        updateAppWidget(context, appWidgetId, views)
     }
 
-    override fun setErrorState(context: Context, appWidgetId: Int, views: RemoteViews) {
+    fun setErrorState(context: Context, appWidgetId: Int, views: RemoteViews) {
         setProgressBarGone(views)
         setContentGone(views)
         setErrorMessageVisible(views)
+        updateAppWidget(context, appWidgetId, views)
+    }
+
+    private fun updateAppWidget(context: Context, appWidgetId: Int, views: RemoteViews) {
         val appWidgetManager = AppWidgetManager.getInstance(context)
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }
 
-    override fun setUpdateButton(context: Context, appWidgetId: Int) {
+    private fun setUpdateButton(context: Context, appWidgetId: Int) {
         val refreshIntent = Intent(context, this::class.java)
         val views = RemoteViews(context.packageName, R.layout.weather_widget)
-        refreshIntent.action = "ru.faizovr.weatherwidget.REFRESH"
-        refreshIntent.putExtra("appWidgetId", appWidgetId)
+        refreshIntent.action = ACTION_REFRESH
+        refreshIntent.putExtra(APP_WIDGET_ID, appWidgetId)
         val refreshPendingIntent = PendingIntent.getBroadcast(
             context,
             0,
@@ -170,8 +195,10 @@ class WeatherWidget : AppWidgetProvider(), WeatherWidgetContract.ViewInterface {
     }
 
     companion object {
-        private const val  TAG = "WeatherWidget"
+        private const val TAG = "WeatherWidget"
         private const val API_KEY = "eea8689af3e42649b7c92028787960b3"
         private const val ICON_BASE_URL = "http://openweathermap.org/img/w/"
+        private const val ACTION_REFRESH = "ru.faizovr.weatherwidget.REFRESH"
+        private const val APP_WIDGET_ID = "appWidgetId"
     }
 }
