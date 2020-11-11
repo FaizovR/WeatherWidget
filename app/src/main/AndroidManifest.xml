@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="ru.faizovr.weatherwidget">
 
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -11,7 +12,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.WeatherWidget"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        tools:targetApi="m">
 
         <meta-data
             android:name="=ru.faizovr.weatherwidget.data.network.UnsafeOkHttpGlideModule"
@@ -19,7 +21,6 @@
 
         <receiver android:name=".WeatherWidget">
             <intent-filter>
-                <action android:name="ru.faizovr.weatherwidget.REFRESH"/>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
 

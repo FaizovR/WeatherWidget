@@ -23,7 +23,7 @@ class WeatherWidget : AppWidgetProvider() {
         appWidgetIds: IntArray
     ) {
         val thisWidget = ComponentName(context, this.javaClass)
-        val allWidgetIds = appWidgetManager.getAppWidgetIds(thisWidget)
+        val allWidgetIds: IntArray = appWidgetManager.getAppWidgetIds(thisWidget)
         val views = RemoteViews(context.packageName, R.layout.weather_widget)
         setLoadingState(context, allWidgetIds, views)
         updateWidgetViews(context, views, allWidgetIds)
@@ -31,7 +31,7 @@ class WeatherWidget : AppWidgetProvider() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
         super.onReceive(context, intent)
-        if (intent?.action == "android.appwidget.action.APPWIDGET_UPDATE") {
+        if (intent?.action == AppWidgetManager.ACTION_APPWIDGET_UPDATE) {
             val extras: Bundle? = intent.extras
             if (extras != null && context != null) {
                 val appWidgetIds: IntArray? =
@@ -126,23 +126,23 @@ class WeatherWidget : AppWidgetProvider() {
     }
 
     private fun updateAppWidget(context: Context, appWidgetIds: IntArray, views: RemoteViews) {
-        val appWidgetManager = AppWidgetManager.getInstance(context)
+        val appWidgetManager: AppWidgetManager = AppWidgetManager.getInstance(context)
         appWidgetManager.updateAppWidget(appWidgetIds, views)
     }
 
     private fun setUpdateButton(context: Context, appWidgetIds: IntArray) {
         val refreshIntent = Intent(context, this::class.java)
         val views = RemoteViews(context.packageName, R.layout.weather_widget)
-        refreshIntent.action = "android.appwidget.action.APPWIDGET_UPDATE"
+        refreshIntent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
         refreshIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds)
-        val refreshPendingIntent = PendingIntent.getBroadcast(
+        val refreshPendingIntent: PendingIntent = PendingIntent.getBroadcast(
             context,
             0,
             refreshIntent,
             PendingIntent.FLAG_UPDATE_CURRENT
         )
         views.setOnClickPendingIntent(R.id.frame_weather, refreshPendingIntent)
-        val appWidgetManager = AppWidgetManager.getInstance(context)
+        val appWidgetManager: AppWidgetManager = AppWidgetManager.getInstance(context)
         appWidgetManager.updateAppWidget(appWidgetIds, views)
     }
 }
