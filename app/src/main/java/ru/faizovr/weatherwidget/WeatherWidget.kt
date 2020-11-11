@@ -9,7 +9,9 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
+import com.bumptech.glide.request.target.AppWidgetTarget
 import ru.faizovr.weatherwidget.data.model.WeatherModel
+import ru.faizovr.weatherwidget.data.network.GlideApp
 import ru.faizovr.weatherwidget.data.network.WeatherResponseCallback
 import ru.faizovr.weatherwidget.data.repository.Repository
 import java.util.ArrayList
@@ -23,10 +25,9 @@ class WeatherWidget : AppWidgetProvider() {
     ) {
         Log.d(TAG, "onUpdate: update")
         val views = RemoteViews(context.packageName, R.layout.weather_widget)
+        appWidgetIds.forEach { Log.d(TAG, "onUpdate: $it") }
         setLoadingState(context, appWidgetIds, views)
-        updateWidgetTextViews(context, views, appWidgetIds)
-        updateAppWidget(context, appWidgetIds, views)
-        setNormalState(context, appWidgetIds, views)
+        updateWidgetViews(context, views, appWidgetIds)
         setUpdateButton(context, appWidgetIds)
         Log.d(TAG, "onUpdate: update end")
     }
@@ -50,19 +51,18 @@ class WeatherWidget : AppWidgetProvider() {
                 val views = RemoteViews(context.packageName, R.layout.weather_widget)
                 if (appWidgetIds != null && appWidgetIds.isNotEmpty()) {
                     setLoadingState(context, appWidgetIds,views)
-                    updateWidgetTextViews(context, views, appWidgetIds)
-                    updateAppWidget(context, appWidgetIds, views)
-                    setNormalState(context, appWidgetIds, views)
+                    updateWidgetViews(context, views, appWidgetIds)
                 }
             }
         }
     }
 
-    private fun updateWidgetTextViews(context: Context, views: RemoteViews, appWidgetIds: IntArray) {
+    private fun updateWidgetViews(context: Context, views: RemoteViews, appWidgetIds: IntArray) {
         Log.d(TAG, "updateWidgetTextViews: update view. IMPORTANT")
         Repository().loadCurrentWeather(object : WeatherResponseCallback {
             override fun onSuccess(weatherModel: WeatherModel) {
-                setTextDataToWidgetViews(views, weatherModel)
+                setDataToWidgetViews(context, views, appWidgetIds, weatherModel)
+                setNormalState(context, appWidgetIds, views)
                 Log.d(TAG, "onSuccess: setDataToView")
             }
 
@@ -80,7 +80,7 @@ class WeatherWidget : AppWidgetProvider() {
         })
     }
 
-    private fun setTextDataToWidgetViews(views: RemoteViews, weatherModel: WeatherModel) {
+    private fun setDataToWidgetViews(context: Context, views: RemoteViews, appWidgetIds: IntArray, weatherModel: WeatherModel) {
         Log.d(TAG, "setTextDataToWidgetViews: set texts")
         views.setTextViewText(
             R.id.text_weather_temperature,
@@ -90,18 +90,20 @@ class WeatherWidget : AppWidgetProvider() {
             R.id.text_weather_description,
             weatherModel.description
         )
-//        val awt: AppWidgetTarget = object : AppWidgetTarget(
-//            context.applicationContext,
-//            R.id.image_weather,
-//            views,
-//            appWidgetId
-//        ) {}
-//        GlideApp
-//            .with(context)
-//            .asBitmap()
-//            .load((weatherModel.iconUrl))
-//            .into(awt)
-//        setNormalState(context, appWidgetId, views)
+        for (id in appWidgetIds) {
+            GlideApp
+                .with(context)
+                .asBitmap()
+                .load(weatherModel.iconUrl)
+                .into(
+                    AppWidgetTarget(
+                        context.applicationContext,
+                        R.id.image_weather,
+                        views,
+                        id
+                    )
+                )
+        }
     }
 
     private fun setProgressBarVisibility(views: RemoteViews, visibility: Int) {
@@ -158,6 +160,7 @@ class WeatherWidget : AppWidgetProvider() {
             refreshIntent,
             PendingIntent.FLAG_UPDATE_CURRENT
         )
+        Log.d(TAG, "setUpdateButton: butttoooooooooooooooooon")
         views.setOnClickPendingIntent(R.id.frame_weather, refreshPendingIntent)
     }
 
