@@ -1,7 +1,7 @@
-package ru.faizovr.weatherwidget.network
+package ru.faizovr.weatherwidget.data.model
 
 
-data class Sys(
+class Sys(
     val country: String,
     val id: Int,
     val sunrise: Int,

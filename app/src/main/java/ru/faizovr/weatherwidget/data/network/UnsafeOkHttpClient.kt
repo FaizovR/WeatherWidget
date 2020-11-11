@@ -1,4 +1,4 @@
-package ru.faizovr.weatherwidget.network
+package ru.faizovr.weatherwidget.data.network
 
 import okhttp3.OkHttpClient
 import java.security.cert.CertificateException
