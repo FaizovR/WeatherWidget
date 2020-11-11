@@ -1,5 +1,6 @@
 package ru.faizovr.weatherwidget.data.repository
 
+import android.util.Log
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -29,6 +30,7 @@ class Repository {
                     if (weatherResponse != null) {
                         val weatherModel = setModelData(weatherResponse)
                         weatherResponseCallback.onSuccess(weatherModel)
+                        Log.d(this@Repository.toString(), "onResponse: loadCurrentWeather insides")
                     }
                 } else {
                     weatherResponseCallback.onLoading(true)
