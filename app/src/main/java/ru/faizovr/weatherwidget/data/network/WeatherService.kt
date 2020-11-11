@@ -12,5 +12,5 @@ interface WeatherService {
         @Query("lang") lang: String,
         @Query("units") metric: String,
         @Query("APPID") appId: String
-    ): Call<Resource<WeatherResponse>>
+    ): Call<WeatherResponse>
 }

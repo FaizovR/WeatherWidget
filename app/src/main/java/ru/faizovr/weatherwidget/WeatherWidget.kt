@@ -1,20 +1,27 @@
 package ru.faizovr.weatherwidget
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.AppWidgetTarget
+import com.bumptech.glide.request.target.Target
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import ru.faizovr.weatherwidget.data.model.WeatherModel
 import ru.faizovr.weatherwidget.data.model.WeatherResponse
 import ru.faizovr.weatherwidget.data.network.GlideApp
+import ru.faizovr.weatherwidget.data.network.WeatherResponseCallback
 import ru.faizovr.weatherwidget.data.network.WeatherServiceBuilder
 import ru.faizovr.weatherwidget.data.repository.Repository
 
@@ -33,11 +40,53 @@ class WeatherWidget : AppWidgetProvider() {
         // There may be multiple widgets active, so update all of them
         val views: RemoteViews = RemoteViews(context.packageName, R.layout.weather_widget)
         val model = WeatherModel(0, "default description", "default url")
-        val weather = Repository(model).loadCurrentWeather("Moscow")
+//        val weather = Repository(model).loadCurrentWeather("Moscow")
         for (appWidgetId in appWidgetIds) {
 //            loadWeatherForecast("Moscow", context, views, appWidgetId) // fix place of call once
-            setViews(views, model)
+//            setViews(views, model)
+            setDataToView(context, views, appWidgetId)
         }
+    }
+
+    private fun setDataToView(context: Context, views: RemoteViews, appWidgetId: Int) {
+        Repository().loadCurrentWeather(object : WeatherResponseCallback {
+            @SuppressLint("CheckResult")
+            override fun onSuccess(temp: Int, description: String, iconUrl: String) {
+                Log.d(TAG, "onSuccess: setDataToView")
+                views.setTextViewText(
+                    R.id.text_weather_temperature,
+                    "$temp° "
+                )
+                views.setTextViewText(
+                    R.id.text_weather_description,
+                    description
+                )
+                val awt: AppWidgetTarget = object : AppWidgetTarget(
+                    context.applicationContext,
+                    R.id.image_weather,
+                    views,
+                    appWidgetId
+                ) {}
+                GlideApp
+                    .with(context)
+                    .asBitmap()
+                    .load("$ICON_BASE_URL$iconUrl.png")
+                    .into(awt)
+                setNormalState(context, appWidgetId, views)
+            }
+
+            override fun onLoading(isLoading: Boolean) {
+                // show loading, retry call (how to retry call within the call ?)
+                Log.d(TAG, "onLoading: setDataToView")
+                setLoadingState(context, appWidgetId, views)
+            }
+
+            override fun onError(t: Throwable) {
+                // show error, may be throw t
+                Log.d(TAG, "onError: setDataToView")
+                setErrorState(context, appWidgetId, views)
+            }
+        })
     }
 
     private fun setUpdateButton(context: Context, appWidgetId: Int, views: RemoteViews) {
@@ -73,7 +122,8 @@ class WeatherWidget : AppWidgetProvider() {
             }
             if (context != null && appWidgetId != null) {
 //                loadWeatherForecast("Moscow", context, views, appWidgetId)
-                setViews(views, model)
+//                setViews(views, model)
+                setDataToView(context, views, appWidgetId)
             }
         }
         if (intent?.action == "android.appwidget.action.APPWIDGET_UPDATE") {
