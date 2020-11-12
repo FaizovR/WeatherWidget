@@ -13,7 +13,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WeatherWidget"
         android:usesCleartextTraffic="true"
-        tools:targetApi="m">
+        tools:targetApi="m"
+        android:fullBackupContent="@xml/backup_descriptor">
 
         <meta-data
             android:name="=ru.faizovr.weatherwidget.data.network.UnsafeOkHttpGlideModule"

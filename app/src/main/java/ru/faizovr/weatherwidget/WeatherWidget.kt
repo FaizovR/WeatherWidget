@@ -108,24 +108,24 @@ class WeatherWidget : AppWidgetProvider() {
         setProgressBarVisibility(views, View.VISIBLE)
         setContentVisibility(views, View.GONE)
         setErrorMessageVisibility(views, View.GONE)
-        updateAppWidget(context, appWidgetIds, views)
+        updateAppWidgets(context, appWidgetIds, views)
     }
 
     private fun setNormalState(context: Context, appWidgetIds: IntArray, views: RemoteViews) {
         setProgressBarVisibility(views, View.GONE)
         setContentVisibility(views, View.VISIBLE)
         setErrorMessageVisibility(views, View.GONE)
-        updateAppWidget(context, appWidgetIds, views)
+        updateAppWidgets(context, appWidgetIds, views)
     }
 
     private fun setErrorState(context: Context, appWidgetIds: IntArray, views: RemoteViews) {
         setProgressBarVisibility(views, View.GONE)
         setContentVisibility(views, View.GONE)
         setErrorMessageVisibility(views, View.VISIBLE)
-        updateAppWidget(context, appWidgetIds, views)
+        updateAppWidgets(context, appWidgetIds, views)
     }
 
-    private fun updateAppWidget(context: Context, appWidgetIds: IntArray, views: RemoteViews) {
+    private fun updateAppWidgets(context: Context, appWidgetIds: IntArray, views: RemoteViews) {
         val appWidgetManager: AppWidgetManager = AppWidgetManager.getInstance(context)
         appWidgetManager.updateAppWidget(appWidgetIds, views)
     }
