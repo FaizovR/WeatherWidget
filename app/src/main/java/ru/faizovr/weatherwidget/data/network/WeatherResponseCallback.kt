@@ -1,6 +1,6 @@
 package ru.faizovr.weatherwidget.data.network
 
-import ru.faizovr.weatherwidget.data.model.WeatherModel
+import ru.faizovr.weatherwidget.domain.model.WeatherModel
 
 interface WeatherResponseCallback {
     fun onSuccess(weatherModel: WeatherModel)

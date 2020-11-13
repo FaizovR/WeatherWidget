@@ -10,7 +10,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.RemoteViews
 import com.bumptech.glide.request.target.AppWidgetTarget
-import ru.faizovr.weatherwidget.data.model.WeatherModel
+import ru.faizovr.weatherwidget.domain.model.WeatherModel
 import ru.faizovr.weatherwidget.data.network.GlideApp
 import ru.faizovr.weatherwidget.data.network.WeatherResponseCallback
 import ru.faizovr.weatherwidget.data.repository.Repository
@@ -25,13 +25,13 @@ class WeatherWidget : AppWidgetProvider() {
         val thisWidget = ComponentName(context, this.javaClass)
         val allWidgetIds: IntArray = appWidgetManager.getAppWidgetIds(thisWidget)
         val views = RemoteViews(context.packageName, R.layout.weather_widget)
-        setLoadingState(context, allWidgetIds, views)
+        setLoadingState(context, allWidgetIds, views) // move to updateWidgetViews
         updateWidgetViews(context, views, allWidgetIds)
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
         super.onReceive(context, intent)
-        if (intent?.action == AppWidgetManager.ACTION_APPWIDGET_UPDATE) {
+        if (intent?.action == AppWidgetManager.ACTION_APPWIDGET_UPDATE) { // return custom action
             val extras: Bundle? = intent.extras
             if (extras != null && context != null) {
                 val appWidgetIds: IntArray? =
@@ -45,7 +45,8 @@ class WeatherWidget : AppWidgetProvider() {
     }
 
     private fun updateWidgetViews(context: Context, views: RemoteViews, appWidgetIds: IntArray) {
-        Repository().loadCurrentWeather(object : WeatherResponseCallback {
+        val repository: Repository by lazy { Repository() }
+        repository.loadCurrentWeather(object : WeatherResponseCallback {
             override fun onSuccess(weatherModel: WeatherModel) {
                 setDataToWidgetViews(context, views, appWidgetIds, weatherModel)
                 setNormalState(context, appWidgetIds, views)
@@ -78,7 +79,8 @@ class WeatherWidget : AppWidgetProvider() {
         for (id in appWidgetIds) {
             GlideApp
                 .with(context)
-                .asBitmap()
+                .asBitmap() // make another brave attempt to load img into cache
+                // and then set with views.setImageAsBitmap(R.id.img, imageView)
                 .load(weatherModel.iconUrl)
                 .into(
                     AppWidgetTarget(
@@ -133,7 +135,7 @@ class WeatherWidget : AppWidgetProvider() {
     private fun setUpdateButton(context: Context, appWidgetIds: IntArray) {
         val refreshIntent = Intent(context, this::class.java)
         val views = RemoteViews(context.packageName, R.layout.weather_widget)
-        refreshIntent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        refreshIntent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE // return custom action
         refreshIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds)
         val refreshPendingIntent: PendingIntent = PendingIntent.getBroadcast(
             context,

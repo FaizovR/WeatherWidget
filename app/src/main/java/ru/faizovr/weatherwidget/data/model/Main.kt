@@ -1,6 +1,9 @@
 package ru.faizovr.weatherwidget.data.model
 
+import com.google.gson.annotations.SerializedName
+
 
 class Main(
-    val temp: Double
+    @SerializedName("temp")
+    val temperature: Double
 )

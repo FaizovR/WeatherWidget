@@ -3,7 +3,7 @@ package ru.faizovr.weatherwidget.data.repository
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import ru.faizovr.weatherwidget.data.model.WeatherModel
+import ru.faizovr.weatherwidget.domain.model.WeatherModel
 import ru.faizovr.weatherwidget.data.model.WeatherResponse
 import ru.faizovr.weatherwidget.data.network.WeatherResponseCallback
 import ru.faizovr.weatherwidget.data.network.WeatherServiceBuilder
@@ -43,7 +43,7 @@ class Repository {
 
     private fun setModelData(weatherResponse: WeatherResponse): WeatherModel =
         WeatherModel(
-            weatherResponse.main.temp.roundToInt(),
+            weatherResponse.main.temperature.roundToInt(),
             weatherResponse.weather[0].description,
             "$ICON_BASE_URL${weatherResponse.weather[0].icon}.png")
 
