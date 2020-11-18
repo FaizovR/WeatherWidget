@@ -14,6 +14,7 @@ import ru.faizovr.weatherwidget.data.model.WeatherModel
 import ru.faizovr.weatherwidget.data.network.GlideApp
 import ru.faizovr.weatherwidget.data.network.WeatherResponseCallback
 import ru.faizovr.weatherwidget.data.repository.Repository
+import ru.faizovr.weatherwidget.presentation.view.SettingsActivity
 
 class WeatherWidget : AppWidgetProvider() {
 
@@ -24,6 +25,8 @@ class WeatherWidget : AppWidgetProvider() {
     ) {
         val thisWidget = ComponentName(context, this.javaClass)
         val allWidgetIds: IntArray = appWidgetManager.getAppWidgetIds(thisWidget)
+        setSettingsButton(context, allWidgetIds)
+        setUpdateButton(context, allWidgetIds)
         val views = RemoteViews(context.packageName, R.layout.weather_widget)
         setLoadingState(context, allWidgetIds, views)
         updateWidgetViews(context, views, allWidgetIds)
@@ -31,15 +34,10 @@ class WeatherWidget : AppWidgetProvider() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
         super.onReceive(context, intent)
-        if (intent?.action == AppWidgetManager.ACTION_APPWIDGET_UPDATE) {
+        if (intent?.action == ACTION_UPDATE_WEATHER) {
             val extras: Bundle? = intent.extras
             if (extras != null && context != null) {
-                val appWidgetIds: IntArray? =
-                    extras.getIntArray(AppWidgetManager.EXTRA_APPWIDGET_IDS)
-                if (appWidgetIds != null && appWidgetIds.isNotEmpty()) {
-                    setUpdateButton(context, appWidgetIds)
-                    onUpdate(context, AppWidgetManager.getInstance(context), appWidgetIds)
-                }
+                onUpdate(context, AppWidgetManager.getInstance(context), intArrayOf())
             }
         }
     }
@@ -133,7 +131,7 @@ class WeatherWidget : AppWidgetProvider() {
     private fun setUpdateButton(context: Context, appWidgetIds: IntArray) {
         val refreshIntent = Intent(context, this::class.java)
         val views = RemoteViews(context.packageName, R.layout.weather_widget)
-        refreshIntent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        refreshIntent.action = ACTION_UPDATE_WEATHER
         refreshIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds)
         val refreshPendingIntent: PendingIntent = PendingIntent.getBroadcast(
             context,
@@ -144,5 +142,18 @@ class WeatherWidget : AppWidgetProvider() {
         views.setOnClickPendingIntent(R.id.frame_weather, refreshPendingIntent)
         val appWidgetManager: AppWidgetManager = AppWidgetManager.getInstance(context)
         appWidgetManager.updateAppWidget(appWidgetIds, views)
+    }
+
+    private fun setSettingsButton(context: Context, appWidgetIds: IntArray) {
+        val intent = Intent(context, SettingsActivity::class.java)
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
+        val views = RemoteViews(context.packageName, R.layout.weather_widget)
+        views.setOnClickPendingIntent(R.id.btn_settings, pendingIntent)
+        val appWidgetManager: AppWidgetManager = AppWidgetManager.getInstance(context)
+        appWidgetManager.updateAppWidget(appWidgetIds, views)
+    }
+
+    companion object {
+        private const val ACTION_UPDATE_WEATHER = "ru.faizovr.weatherwidget.UPDATE_WEATHER"
     }
 }

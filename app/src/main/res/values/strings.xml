@@ -4,4 +4,5 @@
     <string name="message_cloudy">Облачно, без осадков</string>
     <string name="message_error">Не удалось получить данные о погоде. Нажмите, чтобы попробовать ещё раз</string>
     <string name="weather_image">Изображение погоды</string>
+    <string name="settings">Настройки</string>
 </resources>

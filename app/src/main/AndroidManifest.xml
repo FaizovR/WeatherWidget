@@ -20,9 +20,12 @@
             android:name="=ru.faizovr.weatherwidget.data.network.UnsafeOkHttpGlideModule"
             android:value="AppGlideModule" />
 
+        <activity android:name="ru.faizovr.weatherwidget.presentation.view.SettingsActivity" />
+
         <receiver android:name=".WeatherWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="ru.faizovr.weatherwidget.UPDATE_WEATHER" />
             </intent-filter>
 
             <meta-data

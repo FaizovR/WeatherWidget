@@ -17,6 +17,17 @@
         android:textColor="@color/white"
         android:textSize="16sp" />
 
+    <ImageButton
+        android:id="@+id/btn_settings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="24dp"
+        android:background="#00FFFFFF"
+        android:contentDescription="@string/settings"
+        android:src="@drawable/ic_round_settings_24" />
+
     <LinearLayout
         android:id="@+id/linear_layout"
         android:layout_width="match_parent"
@@ -29,8 +40,8 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginStart="12dp"
-            tools:src="@drawable/icon_weather_cloudy"
-            android:contentDescription="@string/weather_image" />
+            android:contentDescription="@string/weather_image"
+            tools:src="@drawable/icon_weather_cloudy" />
 
         <TextView
             android:id="@+id/text_weather_temperature"
@@ -38,10 +49,10 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:layout_marginStart="10dp"
-            tools:text="22°"
             android:textColor="@color/white"
             android:textSize="26sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            tools:text="22°" />
 
         <TextView
             android:id="@+id/text_weather_description"
@@ -50,10 +61,10 @@
             android:layout_gravity="bottom"
             android:layout_marginStart="6dp"
             android:singleLine="true"
-            tools:text="@string/message_cloudy"
             android:textColor="@color/white"
             android:textSize="20sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            tools:text="@string/message_cloudy" />
     </LinearLayout>
 
     <ProgressBar
