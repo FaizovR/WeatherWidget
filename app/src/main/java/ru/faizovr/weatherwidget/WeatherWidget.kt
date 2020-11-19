@@ -6,14 +6,20 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.target.AppWidgetTarget
-import ru.faizovr.weatherwidget.domain.model.WeatherModel
 import ru.faizovr.weatherwidget.data.network.GlideApp
 import ru.faizovr.weatherwidget.data.network.WeatherResponseCallback
 import ru.faizovr.weatherwidget.data.repository.Repository
+import ru.faizovr.weatherwidget.domain.model.WeatherModel
+import kotlin.concurrent.thread
+
 
 class WeatherWidget : AppWidgetProvider() {
 
@@ -38,6 +44,7 @@ class WeatherWidget : AppWidgetProvider() {
                     extras.getIntArray(AppWidgetManager.EXTRA_APPWIDGET_IDS)
                 if (appWidgetIds != null && appWidgetIds.isNotEmpty()) {
                     setUpdateButton(context, appWidgetIds)
+                    Log.d("TAGæ", "onReceive: before onUpdate")
                     onUpdate(context, AppWidgetManager.getInstance(context), appWidgetIds)
                 }
             }
@@ -49,6 +56,7 @@ class WeatherWidget : AppWidgetProvider() {
         repository.loadCurrentWeather(object : WeatherResponseCallback {
             override fun onSuccess(weatherModel: WeatherModel) {
                 setDataToWidgetViews(context, views, appWidgetIds, weatherModel)
+                Log.d("TAGæ", "onSuccess: after setDataToWidgetViews")
                 setNormalState(context, appWidgetIds, views)
             }
 
@@ -76,21 +84,17 @@ class WeatherWidget : AppWidgetProvider() {
             R.id.text_weather_description,
             weatherModel.description
         )
-        for (id in appWidgetIds) {
-            GlideApp
-                .with(context)
-                .asBitmap() // make another brave attempt to load img into cache
-                // and then set with views.setImageAsBitmap(R.id.img, imageView)
-                .load(weatherModel.iconUrl)
-                .into(
-                    AppWidgetTarget(
-                        context.applicationContext,
-                        R.id.image_weather,
-                        views,
-                        id
-                    )
-                )
-        }
+        val target = AppWidgetTarget(
+            context.applicationContext,
+            R.id.image_weather,
+            views,
+            appWidgetIds[0]
+        )
+        GlideApp.with(context)
+            .asBitmap()
+            .load(weatherModel.iconUrl)
+            .error(R.drawable.icon_weather_cloudy) // change to appropriate error icon
+            .into(target) // resolve updating all icons every time
     }
 
     private fun setProgressBarVisibility(views: RemoteViews, visibility: Int) {
