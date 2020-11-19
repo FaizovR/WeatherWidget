@@ -23,6 +23,16 @@ import kotlin.concurrent.thread
 
 class WeatherWidget : AppWidgetProvider() {
 
+    /*
+    * Comment for master branch:
+    *   - call setUpdateButton() before setSettingsButton()
+    *   - remove custom action from manifest (? probably the documentation refers to:
+    ACTION_APPWIDGET_UPDATE
+    ACTION_APPWIDGET_DELETED
+    ACTION_APPWIDGET_ENABLED
+    ACTION_APPWIDGET_DISABLED
+    ACTION_APPWIDGET_OPTIONS_CHANGED)
+    * */
     override fun onUpdate(
         context: Context,
         appWidgetManager: AppWidgetManager,
